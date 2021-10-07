@@ -1,0 +1,23 @@
+image:
+    raw: true
+    preset:
+        - 480*480
+        - 1080*1080
+
+http:
+    host: 0.0.0.0
+    port: 9779
+    cert: cert.pem
+    key: key.pem
+    tls: false
+
+storage:
+    type: local
+    path: ./gallery
+    endpoint: 127.0.0.1:9000
+    bucket: gallery
+    accessKey: abc
+    secretKey: abc
+    tls: false
+
+dev: false
