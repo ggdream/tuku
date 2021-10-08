@@ -10,7 +10,7 @@ go install github.com/ggdream/tuku/cmd/tuku
 ```
 
 ```bash
-./tuku ./config.yaml
+tuku ./config.yaml
 ```
 
 # Docs
