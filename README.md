@@ -5,6 +5,7 @@ A picture object storage server implemented by Golang that can return preset siz
 Get Start It!!
 
 ```bash
+go get -d github.com/ggdream/tuku/cmd/tuku
 go install github.com/ggdream/tuku/cmd/tuku
 ```
 
