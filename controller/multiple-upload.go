@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -52,10 +53,25 @@ func MultipleUpload(fsIns fs.FS) gin.HandlerFunc {
 				return
 			}
 
-			buf := bytes.NewBuffer([]byte{})
-			size, err := io.Copy(buf, r)
-			if err != nil || size != file.Size {
+			data, err := io.ReadAll(r)
+			if err != nil {
 				errno.Abort(c, errno.TypeFileReadFailed)
+				return
+			}
+
+			// 获取文件类型
+			buffer := make([]byte, 512)
+			copy(buffer, data[:512])
+			contentType := http.DetectContentType(buffer)
+
+			if contentType != "image/jpeg" && contentType != "image/png" {
+				errno.Abort(c, errno.TypeFileFormatNotSupported)
+				return
+			}
+
+			imager, err := image.NewImage(bytes.NewReader(data), file.Header.Get("Content-Type"))
+			if err != nil {
+				errno.Abort(c, errno.TypeImageDecodeFailed)
 				return
 			}
 
@@ -64,30 +80,23 @@ func MultipleUpload(fsIns fs.FS) gin.HandlerFunc {
 				filename = form.Names[i]
 			}
 			// 存储原图
-			result, err := fsIns.WriteFile(r, filename, file.Size, true)
+			result, err := fsIns.WriteFile(bytes.NewReader(data), filename, contentType, file.Size, true)
 			if err != nil {
 				errno.Abort(c, errno.TypeFileUploadFailed)
 				return
 			}
 			results = append(results, result)
 
-			imager, err := image.NewImage(buf, file.Header.Get("Content-Type"))
-			if err != nil {
-				errno.Abort(c, errno.TypeImageDecodeFailed)
-				return
-			}
-
-			writers := make([]bytes.Buffer, len(presets))
-			err = imager.Resizes(presets, writers)
+			buffers, err := imager.Resizes(presets)
 			if err != nil {
 				errno.Abort(c, errno.TypeImageResizeFailed)
 				// TODO: 删除图片的操作
 				return
 			}
 
-			for idx, reader := range writers {
+			for idx, reader := range buffers {
 				name := fmt.Sprintf("%s.%d_%d.jpg", filename, presets[idx][0], presets[idx][1])
-				_, err = fsIns.WriteFile(&reader, name, int64(reader.Len()), false)
+				_, err = fsIns.WriteFile(&reader, name, "image/jpeg", int64(reader.Len()), false)
 				if err != nil {
 					errno.Abort(c, errno.TypeFileUploadFailed)
 					return

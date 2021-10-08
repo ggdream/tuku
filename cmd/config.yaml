@@ -12,12 +12,12 @@ http:
     tls: false
 
 storage:
-    type: local
+    type: minio
     path: ./gallery
     endpoint: 127.0.0.1:9000
     bucket: gallery
-    accessKey: abc
-    secretKey: abc
+    accessKey: "12345678"
+    secretKey: "12345678"
     tls: false
 
-dev: false
+dev: true

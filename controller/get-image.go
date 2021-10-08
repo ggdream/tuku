@@ -3,6 +3,7 @@ package controller
 import (
 	"bytes"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -62,6 +63,7 @@ func GetImage(fsIns fs.FS) gin.HandlerFunc {
 				preset = p
 			}
 		} else if form.Width == 0 && form.Height == 0 {
+			needResize = true
 			preset = *presets[0]
 		} else {
 			needResize = true
@@ -70,12 +72,23 @@ func GetImage(fsIns fs.FS) gin.HandlerFunc {
 
 		if needResize {
 			// 现读出原图并生成指定尺寸图片
-			reader, _, _, err := fsIns.GetReader(object, true)
+			data, err := fsIns.ReadFile(object, true)
 			if err != nil {
 				errno.Abort(c, errno.TypeFileOpenFailed)
 				return
 			}
-			imager, err := image.NewImage(reader, "image/jpeg")
+
+			// 获取文件类型
+			buffer := make([]byte, 512)
+			copy(buffer, data[:512])
+			contentType := http.DetectContentType(buffer)
+
+			// if contentType != "image/jpeg" && contentType != "image/png" {
+			// 	errno.Abort(c, errno.TypeFileFormatNotSupported)
+			// 	return
+			// }
+
+			imager, err := image.NewImage(bytes.NewReader(data), contentType)
 			if err != nil {
 				errno.Abort(c, errno.TypeFileOpenFailed)
 				return

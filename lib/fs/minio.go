@@ -3,7 +3,7 @@ package fs
 import (
 	"context"
 	"io"
-	"path/filepath"
+	"path"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -36,9 +36,7 @@ func NewMinIO(endpoint, bucket, accessKey, secretKey string, useSSL bool) (*MinI
 		return nil, err
 	}
 	if !isExists {
-		opt := minio.MakeBucketOptions{
-			ObjectLocking: true,
-		}
+		opt := minio.MakeBucketOptions{}
 		err = client.MakeBucket(context.Background(), bucket, opt)
 		if err != nil {
 			return nil, err
@@ -53,11 +51,13 @@ func NewMinIO(endpoint, bucket, accessKey, secretKey string, useSSL bool) (*MinI
 }
 
 // WriteFile 保存到MinIO
-func (m *MinIO) WriteFile(reader io.Reader, objectName string, fileSize int64, isRaw bool) (*StorageResult, error) {
+func (m *MinIO) WriteFile(reader io.Reader, objectName, contentType string, fileSize int64, isRaw bool) (*StorageResult, error) {
 	ctx, cancel := context.WithTimeout(m.context, 3*time.Minute)
 	defer cancel()
 
-	opt := minio.PutObjectOptions{}
+	opt := minio.PutObjectOptions{
+		ContentType: contentType,
+	}
 	_, err := m.client.PutObject(ctx, m.bucket, m.getPath(objectName, isRaw), reader, fileSize, opt)
 	if err != nil {
 		return nil, err
@@ -111,9 +111,9 @@ func (m *MinIO) adjustName(objectName string) string {
 }
 
 func (m *MinIO) getRawPath(objectName string) string {
-	return filepath.Join(RAW, objectName)
+	return path.Join(RAW, objectName)
 }
 
 func (m *MinIO) getGenPath(objectName string) string {
-	return filepath.Join(GEN, objectName)
+	return path.Join(GEN, objectName)
 }

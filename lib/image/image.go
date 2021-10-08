@@ -46,16 +46,16 @@ func (r *Image) Resize(width, height uint, writer io.Writer) error {
 }
 
 // Resizes 按预设将图片修改为指定大小
-func (r *Image) Resizes(preset []*[2]uint, writers []bytes.Buffer) error {
-	for i, writer := range writers {
-		p := preset[i]
-		err := r.Resize(p[0], p[1], &writer)
+func (r *Image) Resizes(presets []*[2]uint) ([]bytes.Buffer, error) {
+	buffers := make([]bytes.Buffer, len(presets))
+	for i, preset := range presets {
+		err := r.Resize(preset[0], preset[1], &buffers[i])
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return buffers, nil
 }
 
 // Thumbnail 放缩至预设最大宽高范围内

@@ -14,6 +14,7 @@ var errorsMap = map[Type]string{
 	TypeFileCannotFind:    "文件找不到",
 	TypeImageDecodeFailed: "图像解码失败",
 	TypeImageResizeFailed: "图像调整失败",
+	TypeFileFormatNotSupported: "不受支持的文件格式",
 
 	TypeParamsMissingErr: "参数缺失错误",
 	TypeParamsParsingErr: "参数解析错误",

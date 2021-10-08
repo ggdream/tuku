@@ -36,7 +36,7 @@ func mkDir(path string) error {
 	return nil
 }
 
-func (l *Local) WriteFile(reader io.Reader, objectName string, fileSize int64, isRaw bool) (*StorageResult, error) {
+func (l *Local) WriteFile(reader io.Reader, objectName, contentType string, fileSize int64, isRaw bool) (*StorageResult, error) {
 	path := l.getPath(objectName, isRaw)
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
@@ -65,6 +65,11 @@ func (l *Local) GetReader(objectName string, isRaw bool) (io.Reader, int64, stri
 	}
 
 	return file, info.Size(), "image/jpeg", nil
+}
+
+func (l *Local) ReadFile(objectName string, isRaw bool) ([]byte, error) {
+	path := l.getPath(objectName, isRaw)
+	return os.ReadFile(path)
 }
 
 func (l *Local) getPath(objectName string, isRaw bool) string {
