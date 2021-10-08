@@ -1,0 +1,13 @@
+name: tuku
+version: 1.0.0-rc1
+author: mocaraka@126.com
+description: A picture object storage server implemented by Golang that can return preset sizes and custom sizes in real time.
+repository: github.com/ggdream/tuku
+env: go1.17.1-windows/amd64
+target:
+  - windows/amd64
+  - windows/386
+  - linux/amd64
+  - linux/386
+  - darwin/amd64
+  - darwin/arm64
